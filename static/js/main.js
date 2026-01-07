@@ -7,6 +7,31 @@ function hideLoading() {
     document.getElementById('loadingOverlay').style.display = 'none';
 }
 
+// Sidebar Toggle Function
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    
+    sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('expanded');
+    
+    // Save state to localStorage
+    const isCollapsed = sidebar.classList.contains('collapsed');
+    localStorage.setItem('sidebarCollapsed', isCollapsed);
+}
+
+// Initialize sidebar state from localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    
+    if (isCollapsed) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+    }
+});
+
 // Navigation System
 function navigateTo(pageName) {
     // Hide all pages
@@ -23,9 +48,13 @@ function navigateTo(pageName) {
     const pageMap = {
         'dashboard': 'dashboardPage',
         'strength': 'strengthPage',
+        'generator': 'generatorPage',
+        'breach': 'breachPage',
         'hashing': 'hashingPage',
         'attacks': 'attacksPage',
         'defense': 'defensePage',
+        '2fa': '2faPage',
+        'policy': 'policyPage',
         'logs': 'logsPage'
     };
     
@@ -38,10 +67,14 @@ function navigateTo(pageName) {
         const buttonIndex = {
             'dashboard': 0,
             'strength': 1,
-            'hashing': 2,
-            'attacks': 3,
-            'defense': 4,
-            'logs': 5
+            'generator': 2,
+            'breach': 3,
+            'hashing': 4,
+            'attacks': 5,
+            'defense': 6,
+            '2fa': 7,
+            'policy': 8,
+            'logs': 9
         }[pageName];
         
         if (navButtons[buttonIndex]) {
@@ -612,10 +645,393 @@ async function updateStats() {
     }
 }
 
+// Dark Mode Toggle
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', newTheme);
+    
+    const icon = document.getElementById('themeIcon');
+    icon.className = newTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+    
+    localStorage.setItem('theme', newTheme);
+}
+
+// Password Generator
+function updateLengthDisplay(value) {
+    document.getElementById('lengthValue').textContent = value;
+}
+
+async function generatePassword() {
+    const length = document.getElementById('passwordLength').value;
+    const include_upper = document.getElementById('includeUpper').checked;
+    const include_lower = document.getElementById('includeLower').checked;
+    const include_numbers = document.getElementById('includeNumbers').checked;
+    const include_symbols = document.getElementById('includeSymbols').checked;
+    const pronounceable = document.getElementById('pronounceable').checked;
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/generate-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                length: parseInt(length),
+                include_upper,
+                include_lower,
+                include_numbers,
+                include_symbols,
+                pronounceable
+            })
+        });
+        
+        const data = await response.json();
+        
+        // Display generated password
+        const resultDiv = document.getElementById('generatedPassword');
+        resultDiv.style.display = 'block';
+        document.getElementById('generatedPasswordText').value = data.password;
+        
+        // Display strength info
+        const strengthDiv = document.getElementById('generatedStrength');
+        strengthDiv.innerHTML = `
+            <div class="result-item">
+                <strong>Strength:</strong>
+                <span class="badge badge-${data.strength.color}">${data.strength.strength}</span>
+            </div>
+            <div class="result-item">
+                <strong>Entropy:</strong>
+                <span>${data.strength.entropy} bits</span>
+            </div>
+            <div class="result-item">
+                <strong>Length:</strong>
+                <span>${data.strength.length} characters</span>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while generating the password');
+    } finally {
+        hideLoading();
+    }
+}
+
+function copyPassword() {
+    const passwordField = document.getElementById('generatedPasswordText');
+    passwordField.select();
+    document.execCommand('copy');
+    
+    // Show feedback
+    const btn = event.target.closest('button');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    btn.classList.add('btn-success');
+    
+    setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('btn-success');
+    }, 2000);
+}
+
+// Breach Checker
+async function checkBreach() {
+    const password = document.getElementById('breachPasswordInput').value;
+    
+    if (!password) {
+        alert('Please enter a password to check');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/check-breach', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password })
+        });
+        
+        const data = await response.json();
+        
+        // Display results
+        const resultDiv = document.getElementById('breachResult');
+        resultDiv.style.display = 'block';
+        
+        if (data.is_breached) {
+            resultDiv.innerHTML = `
+                <div class="alert error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>⚠️ PASSWORD COMPROMISED!</strong>
+                        <p>${data.message}</p>
+                        <p><strong>Recommendation:</strong> Choose a different password immediately!</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert success">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <strong>✓ Password Not Found in Breaches</strong>
+                        <p>${data.message}</p>
+                        <p>This password has not been found in our breach database.</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while checking the breach database');
+    } finally {
+        hideLoading();
+    }
+}
+
+// 2FA Demo
+let current2FASecret = '';
+
+async function setup2FA() {
+    const username = document.getElementById('2faUsername').value;
+    
+    if (!username) {
+        alert('Please enter a username or email');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/2fa/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username })
+        });
+        
+        const data = await response.json();
+        
+        // Display QR code
+        const qrSection = document.getElementById('qrCodeSection');
+        qrSection.style.display = 'block';
+        
+        document.getElementById('qrCodeImage').src = data.qr_code;
+        document.getElementById('secretKey').textContent = data.secret;
+        current2FASecret = data.secret;
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while generating 2FA');
+    } finally {
+        hideLoading();
+    }
+}
+
+function copySecret() {
+    const secretText = document.getElementById('secretKey').textContent;
+    navigator.clipboard.writeText(secretText);
+    
+    // Show feedback
+    const btn = event.target.closest('button');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    
+    setTimeout(() => {
+        btn.innerHTML = originalHTML;
+    }, 2000);
+}
+
+async function verify2FA() {
+    const code = document.getElementById('2faCode').value;
+    
+    if (!code || code.length !== 6) {
+        alert('Please enter a valid 6-digit code');
+        return;
+    }
+    
+    if (!current2FASecret) {
+        alert('Please setup 2FA first');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/2fa/verify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                secret: current2FASecret,
+                code: code
+            })
+        });
+        
+        const data = await response.json();
+        
+        // Display results
+        const resultDiv = document.getElementById('2faVerifyResult');
+        resultDiv.style.display = 'block';
+        
+        if (data.valid) {
+            resultDiv.innerHTML = `
+                <div class="alert success">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <strong>✓ Code Verified Successfully!</strong>
+                        <p>Your 2FA setup is working correctly. This adds an extra layer of security to your account.</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert error">
+                    <i class="fas fa-times-circle"></i>
+                    <div>
+                        <strong>✗ Invalid Code</strong>
+                        <p>The code you entered is incorrect or has expired. Please try again.</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while verifying the code');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Password Policy
+function updatePolicyDisplay() {
+    document.getElementById('minLengthValue').textContent = document.getElementById('minLength').value;
+    document.getElementById('maxLengthValue').textContent = document.getElementById('maxLength').value;
+}
+
+async function checkPolicy() {
+    const password = document.getElementById('policyPasswordInput').value;
+    
+    if (!password) {
+        alert('Please enter a password to test');
+        return;
+    }
+    
+    const policy = {
+        min_length: parseInt(document.getElementById('minLength').value),
+        max_length: parseInt(document.getElementById('maxLength').value),
+        require_uppercase: document.getElementById('requireUpper').checked,
+        require_lowercase: document.getElementById('requireLower').checked,
+        require_numbers: document.getElementById('requireNumbers').checked,
+        require_special: document.getElementById('requireSpecial').checked,
+        no_common_passwords: document.getElementById('noCommonPasswords').checked,
+        no_repeated_chars: document.getElementById('noRepeatedChars').checked,
+        no_sequential: document.getElementById('noSequential').checked
+    };
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/password-policy/check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password, policy })
+        });
+        
+        const data = await response.json();
+        
+        // Display results
+        const resultDiv = document.getElementById('policyResult');
+        resultDiv.style.display = 'block';
+        
+        let html = `
+            <div class="alert ${data.compliant ? 'success' : 'error'}">
+                <i class="fas fa-${data.compliant ? 'check-circle' : 'times-circle'}"></i>
+                <div>
+                    <strong>${data.compliant ? '✓ Password Complies with Policy' : '✗ Password Violates Policy'}</strong>
+                    <p>Compliance Score: ${Math.round(data.score)}%</p>
+                </div>
+            </div>
+            
+            ${data.passed.length > 0 ? `
+                <h4 style="color: var(--success-color); margin-top: 1rem;">
+                    <i class="fas fa-check"></i> Passed Requirements:
+                </h4>
+                <ul class="checklist">
+                    ${data.passed.map(item => `<li class="check-item valid"><i class="fas fa-check"></i> ${item}</li>`).join('')}
+                </ul>
+            ` : ''}
+            
+            ${data.violations.length > 0 ? `
+                <h4 style="color: var(--danger-color); margin-top: 1rem;">
+                    <i class="fas fa-times"></i> Violations:
+                </h4>
+                <ul class="checklist">
+                    ${data.violations.map(item => `<li class="check-item invalid"><i class="fas fa-times"></i> ${item}</li>`).join('')}
+                </ul>
+            ` : ''}
+        `;
+        
+        resultDiv.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while checking the policy');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Export Logs
+async function exportLogs() {
+    try {
+        const response = await fetch('/api/export/json');
+        const data = await response.json();
+        
+        // Create download
+        const dataStr = JSON.stringify(data, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `security-report-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        alert('Security report exported successfully!');
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while exporting the logs');
+    }
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     updateStats();
     
     // Auto-refresh stats every 5 seconds
     setInterval(updateStats, 5000);
+    
+    // Load theme from localStorage
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    const icon = document.getElementById('themeIcon');
+    if (icon) {
+        icon.className = savedTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+    }
 });
+

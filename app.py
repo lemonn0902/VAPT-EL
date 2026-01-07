@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, send_file
 import hashlib
 import bcrypt
 import re
@@ -9,6 +9,11 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 import os
 import json
+import secrets
+import pyotp
+import qrcode
+from io import BytesIO
+import base64
 
 app = Flask(__name__)
 app.secret_key = 'vapt_security_project_2026'
@@ -215,6 +220,308 @@ def calculate_entropy(password):
         entropy = len(password) * math.log2(charset_size)
         return round(entropy, 2)
     return 0
+
+@app.route('/api/generate-password', methods=['POST'])
+def generate_password():
+    """Generate a secure random password"""
+    data = request.json
+    length = int(data.get('length', 16))
+    include_upper = data.get('include_upper', True)
+    include_lower = data.get('include_lower', True)
+    include_numbers = data.get('include_numbers', True)
+    include_symbols = data.get('include_symbols', True)
+    pronounceable = data.get('pronounceable', False)
+    
+    # Validate length
+    length = max(8, min(length, 128))
+    
+    if pronounceable:
+        # Generate pronounceable password
+        consonants = 'bcdfghjklmnpqrstvwxyz'
+        vowels = 'aeiou'
+        password = ''
+        for i in range(length):
+            if i % 2 == 0:
+                password += random.choice(consonants)
+            else:
+                password += random.choice(vowels)
+        
+        # Add numbers and symbols if requested
+        if include_numbers:
+            password = password[:-2] + str(random.randint(0, 99))
+        if include_symbols:
+            password = password + random.choice('!@#$%^&*')
+    else:
+        # Generate random password
+        charset = ''
+        if include_lower:
+            charset += string.ascii_lowercase
+        if include_upper:
+            charset += string.ascii_uppercase
+        if include_numbers:
+            charset += string.digits
+        if include_symbols:
+            charset += '!@#$%^&*()_+-=[]{}|;:,.<>?'
+        
+        if not charset:
+            charset = string.ascii_letters + string.digits
+        
+        password = ''.join(secrets.choice(charset) for _ in range(length))
+    
+    # Calculate strength
+    strength_response = check_password_strength_internal(password)
+    
+    return jsonify({
+        'password': password,
+        'strength': strength_response
+    })
+
+def check_password_strength_internal(password):
+    """Internal function to check password strength"""
+    length = len(password)
+    has_upper = bool(re.search(r'[A-Z]', password))
+    has_lower = bool(re.search(r'[a-z]', password))
+    has_digit = bool(re.search(r'\d', password))
+    has_special = bool(re.search(r'[!@#$%^&*(),.?":{}|<>]', password))
+    is_common = password.lower() in [p.lower() for p in COMMON_PASSWORDS[:100]]
+    
+    score = 0
+    if length >= 8: score += 1
+    if length >= 12: score += 1
+    if length >= 16: score += 1
+    if has_upper: score += 1
+    if has_lower: score += 1
+    if has_digit: score += 1
+    if has_special: score += 2
+    if is_common: score = max(0, score - 3)
+    
+    if score <= 3:
+        strength = 'Weak'
+        color = 'danger'
+    elif score <= 6:
+        strength = 'Medium'
+        color = 'warning'
+    else:
+        strength = 'Strong'
+        color = 'success'
+    
+    return {
+        'strength': strength,
+        'score': score,
+        'color': color,
+        'length': length,
+        'has_upper': has_upper,
+        'has_lower': has_lower,
+        'has_digit': has_digit,
+        'has_special': has_special,
+        'is_common': is_common,
+        'entropy': calculate_entropy(password)
+    }
+
+@app.route('/api/check-breach', methods=['POST'])
+def check_breach():
+    """Simulate checking if password has been in known data breaches"""
+    data = request.json
+    password = data.get('password', '')
+    
+    if not password:
+        return jsonify({'error': 'Password is required'}), 400
+    
+    # Simulate breach check (in real app, use haveibeenpwned API)
+    # For demo, mark common passwords and simple patterns as breached
+    is_breached = False
+    breach_count = 0
+    
+    if password.lower() in [p.lower() for p in COMMON_PASSWORDS[:50]]:
+        is_breached = True
+        breach_count = random.randint(100000, 5000000)
+    elif len(password) < 8:
+        is_breached = True
+        breach_count = random.randint(10000, 100000)
+    elif password.isdigit() or password.isalpha():
+        is_breached = True
+        breach_count = random.randint(5000, 50000)
+    
+    return jsonify({
+        'is_breached': is_breached,
+        'breach_count': breach_count,
+        'message': f'This password has been seen {breach_count:,} times in data breaches!' if is_breached else 'Good news! This password was not found in known data breaches.'
+    })
+
+@app.route('/api/2fa/generate', methods=['POST'])
+def generate_2fa():
+    """Generate 2FA secret and QR code"""
+    data = request.json
+    username = data.get('username', 'user@example.com')
+    
+    # Generate secret
+    secret = pyotp.random_base32()
+    
+    # Generate QR code
+    totp = pyotp.TOTP(secret)
+    provisioning_uri = totp.provisioning_uri(
+        name=username,
+        issuer_name='VAPT Password Security'
+    )
+    
+    # Create QR code
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(provisioning_uri)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Convert to base64
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    qr_code_base64 = base64.b64encode(buffered.getvalue()).decode()
+    
+    return jsonify({
+        'secret': secret,
+        'qr_code': f'data:image/png;base64,{qr_code_base64}',
+        'provisioning_uri': provisioning_uri
+    })
+
+@app.route('/api/2fa/verify', methods=['POST'])
+def verify_2fa():
+    """Verify 2FA code"""
+    data = request.json
+    secret = data.get('secret', '')
+    code = data.get('code', '')
+    
+    if not secret or not code:
+        return jsonify({'error': 'Secret and code are required'}), 400
+    
+    try:
+        totp = pyotp.TOTP(secret)
+        is_valid = totp.verify(code, valid_window=1)
+        
+        return jsonify({
+            'valid': is_valid,
+            'message': 'Code verified successfully!' if is_valid else 'Invalid code. Please try again.'
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/password-policy/check', methods=['POST'])
+def check_password_policy():
+    """Check password against custom policy"""
+    data = request.json
+    password = data.get('password', '')
+    policy = data.get('policy', {})
+    
+    if not password:
+        return jsonify({'error': 'Password is required'}), 400
+    
+    violations = []
+    passed = []
+    
+    # Check minimum length
+    min_length = policy.get('min_length', 8)
+    if len(password) < min_length:
+        violations.append(f'Minimum length of {min_length} characters required')
+    else:
+        passed.append(f'Minimum length requirement met ({len(password)}/{min_length})')
+    
+    # Check maximum length
+    max_length = policy.get('max_length', 128)
+    if len(password) > max_length:
+        violations.append(f'Maximum length of {max_length} characters exceeded')
+    else:
+        passed.append(f'Maximum length requirement met ({len(password)}/{max_length})')
+    
+    # Check uppercase
+    if policy.get('require_uppercase', False):
+        if not re.search(r'[A-Z]', password):
+            violations.append('At least one uppercase letter required')
+        else:
+            passed.append('Contains uppercase letters')
+    
+    # Check lowercase
+    if policy.get('require_lowercase', False):
+        if not re.search(r'[a-z]', password):
+            violations.append('At least one lowercase letter required')
+        else:
+            passed.append('Contains lowercase letters')
+    
+    # Check numbers
+    if policy.get('require_numbers', False):
+        if not re.search(r'\d', password):
+            violations.append('At least one number required')
+        else:
+            passed.append('Contains numbers')
+    
+    # Check special characters
+    if policy.get('require_special', False):
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            violations.append('At least one special character required')
+        else:
+            passed.append('Contains special characters')
+    
+    # Check no common passwords
+    if policy.get('no_common_passwords', False):
+        if password.lower() in [p.lower() for p in COMMON_PASSWORDS[:100]]:
+            violations.append('Password is too common')
+        else:
+            passed.append('Not a common password')
+    
+    # Check no repeated characters
+    if policy.get('no_repeated_chars', False):
+        if re.search(r'(.)\1{2,}', password):
+            violations.append('No more than 2 repeated characters allowed')
+        else:
+            passed.append('No excessive repeated characters')
+    
+    # Check no sequential characters
+    if policy.get('no_sequential', False):
+        for i in range(len(password) - 2):
+            if ord(password[i]) + 1 == ord(password[i+1]) and ord(password[i+1]) + 1 == ord(password[i+2]):
+                violations.append('Sequential characters not allowed (e.g., abc, 123)')
+                break
+        else:
+            passed.append('No sequential characters')
+    
+    is_compliant = len(violations) == 0
+    
+    return jsonify({
+        'compliant': is_compliant,
+        'violations': violations,
+        'passed': passed,
+        'score': len(passed) / (len(passed) + len(violations)) * 100 if (len(passed) + len(violations)) > 0 else 0
+    })
+
+@app.route('/api/export/json', methods=['GET'])
+def export_json():
+    """Export security data as JSON"""
+    data = {
+        'export_date': datetime.now().isoformat(),
+        'statistics': {
+            'total_users': len(user_accounts),
+            'total_login_attempts': sum(len(attempts) for attempts in login_attempts.values()),
+            'locked_accounts': sum(1 for user in user_accounts.values() if user.get('locked', False)),
+            'total_security_events': len(attack_logs)
+        },
+        'users': [
+            {
+                'username': username,
+                'created_at': user.get('created_at'),
+                'locked': user.get('locked', False),
+                'failed_attempts': user.get('failed_attempts', 0)
+            }
+            for username, user in user_accounts.items()
+        ],
+        'security_logs': attack_logs[-100:],  # Last 100 logs
+        'defense_status': {
+            'enabled': defense_enabled,
+            'features': [
+                'Account Lockout (3 attempts)',
+                'Rate Limiting (5 attempts per 5 minutes)',
+                'Login Delay',
+                'Real-time Monitoring'
+            ]
+        }
+    }
+    
+    return jsonify(data)
 
 @app.route('/api/hash-password', methods=['POST'])
 def hash_password():
