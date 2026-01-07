@@ -12,33 +12,33 @@ Traditional password systems are vulnerable to credential-based attacks such as 
 
 ## ✨ Features
 
-### Step 1: Password Strength Analyzer
+### 1: Password Strength Analyzer
 - Real-time password strength assessment
 - Entropy calculation
 - Estimated crack time computation
 - Character composition analysis
 - Common password detection
 
-### Step 2: Password Storage Simulation
+### 2: Password Storage Simulation
 - Demonstrates secure vs. insecure storage
 - Multiple hashing algorithms (MD5, SHA-256, BCrypt)
 - Visual comparison of hash outputs
 - Best practices demonstration
 
-### Step 3: Credential Attack Simulation
+### 3: Credential Attack Simulation
 - **Brute Force Attack**: Systematically tries all combinations
 - **Dictionary Attack**: Tests against common password lists
 - Safe, controlled attack environment
 - Real-time statistics and success rates
 
-### Step 4: Attack Detection & Defense
+### 4: Attack Detection & Defense
 - Account lockout after failed attempts
 - Rate limiting (max attempts per time window)
 - Login delay mechanisms
 - Real-time security event monitoring
 - Test user account system
 
-### Step 5: Security Event Logs
+### 5: Security Event Logs
 - Comprehensive attack logging
 - Success/failure tracking
 - Timestamp and IP recording
@@ -83,93 +83,6 @@ The application features a **multi-page navigation system** with six main sectio
 5. **Defense System** - Security mechanisms testing
 6. **Security Logs** - Event monitoring and analysis
 
-#### Quick Navigation
-- Click any button in the top navigation bar to switch pages
-- Use "Previous" and "Next" buttons at the bottom of each page
-- Click "Back to Dashboard" to return to the home page
-
-### Quick Action Buttons
-
-Each page includes **Quick Action** buttons for instant demonstrations:
-
-- **Password Analyzer**: Try Weak/Medium/Strong passwords instantly
-- **Password Hashing**: Quick demo with pre-filled password
-- **Attack Simulation**: One-click demo for brute force and dictionary attacks
-- **Defense System**: Quick setup for defense demonstration
-- **Security Logs**: Export logs as JSON file
-
-### For Demonstration/Evaluation:
-
-1. **Start with Password Analysis**
-   - Enter different passwords (weak, medium, strong)
-   - Observe strength metrics and crack time estimates
-   - Example passwords to try:
-     - Weak: `abc123`
-     - Medium: `Password1`
-     - Strong: `MyS3cur3P@ssw0rd!2026`
-
-2. **Show Password Hashing**
-   - Enter a password
-   - Compare plain text vs. hashed outputs
-   - Explain why BCrypt is recommended
-
-3. **Run Attack Simulations**
-   - **Brute Force**: Try a short password like `abc` or `123`
-   - **Dictionary Attack**: Try common passwords like `password123`, `admin`, `welcome`
-   - Show how weak passwords fail quickly
-
-4. **Enable Defense Mechanisms**
-   - Toggle defense ON
-   - Register a test user
-   - Try multiple failed login attempts
-   - Show account lockout and rate limiting in action
-
-5. **Review Security Logs**
-   - Display all attack attempts
-   - Show blocked vs. successful attempts
-   - Analyze patterns
-
-## 🎥 Demo Flow (5-7 minutes)
-
-**NEW Multi-Page Navigation Flow:**
-
-1. **Dashboard Introduction** (30 sec)
-   - Show the welcome page with all feature cards
-   - Explain the 6 interactive sections
-   - Click on Password Analyzer
-
-2. **Password Analyzer** (1 min)
-   - Use "Try Weak Password" button → show instant crack time
-   - Use "Try Strong Password" button → show years to crack
-   - Explain entropy and strength metrics
-   - Click "Next: Password Hashing"
-
-3. **Hashing Demo** (1 min)
-   - Click "Quick Demo" button
-   - Compare plain text vs. hashed outputs
-   - Explain why BCrypt is recommended
-   - Click "Next: Attack Simulation"
-
-4. **Attack WITHOUT Defense** (2 min)
-   - Switch to "Brute Force" tab, click "Quick Demo"
-   - Switch to "Dictionary Attack" tab, click "Quick Demo"
-   - Show how weak passwords fail quickly
-   - Click "Next: Defense System"
-
-5. **Attack WITH Defense** (2 min)
-   - Click "Quick Setup Demo" button
-   - Register the pre-filled test user
-   - Attempt multiple failed logins → BLOCKED
-   - Show account lockout and rate limiting
-   - Click "Next: Security Logs"
-
-6. **Results Analysis** (1 min)
-   - Click "Refresh Logs" to see all events
-   - Show blocked vs. successful attempts
-   - Click "Export Logs" to download data
-   - Return to Dashboard
-
-**Pro Tip**: Use the navigation bar at the top to jump between sections during Q&A!
 
 ## 🛠️ Technical Stack
 
@@ -178,18 +91,6 @@ Each page includes **Quick Action** buttons for instant demonstrations:
 - **Security**: bcrypt, hashlib
 - **Features**: RESTful API, Real-time updates
 
-## 📊 What Makes This Stand Out
-
-✅ **Multi-page navigation** - Professional web app structure with intuitive flow  
-✅ **Quick action buttons** - Instant demonstrations for faster presentations  
-✅ **Hands-on demonstration** - Not just theory, actual working simulations  
-✅ **Both attack + defense shown** - Complete security picture  
-✅ **No illegal hacking** - Controlled, safe environment  
-✅ **Real-world relevance** - Addresses actual security concerns  
-✅ **Easy to explain** - Visual, intuitive interface  
-✅ **Professional UI** - Modern, responsive design with smooth transitions  
-✅ **Comprehensive logging** - Detailed event tracking with export functionality  
-✅ **Educational tooltips** - Help and tips integrated throughout  
 
 ## ⚠️ Important Notes
 
@@ -217,14 +118,6 @@ vapt-el/
         └── main.js        # Frontend functionality
 ```
 
-## 🎓 Learning Outcomes
-
-Students/Viewers will understand:
-- How password strength affects security
-- Why proper password storage is critical
-- How credential attacks work
-- Effectiveness of defense mechanisms
-- Real-world security best practices
 
 ## 🔧 Troubleshooting
 
@@ -243,7 +136,6 @@ This project is for educational purposes. Free to use and modify for learning.
 
 ## 👨‍💻 Developer
 
-Created for VAPT (Vulnerability Assessment and Penetration Testing) educational demonstration.
 
 ---
 
