@@ -1,0 +1,26 @@
+[
+  {
+    "timestamp": "2026-01-07T17:41:13.920735",
+    "type": "Login failed",
+    "username": "suhani",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Invalid password"
+  },
+  {
+    "timestamp": "2026-01-07T17:41:25.525395",
+    "type": "Login failed",
+    "username": "suhani",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Invalid password"
+  },
+  {
+    "timestamp": "2026-01-07T17:41:34.116866",
+    "type": "Account locked",
+    "username": "suhani",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "3 failed attempts"
+  }
+]

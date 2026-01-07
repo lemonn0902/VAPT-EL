@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Security & Credential Attack Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-shield-alt"></i> Password Security & Credential Attack Detection</h1>
+            <p class="subtitle">Interactive Analysis of Password Vulnerabilities and Defense Mechanisms</p>
+        </div>
+    </header>
+
+    <!-- Navigation Menu -->
+    <nav class="main-nav">
+        <div class="container">
+            <button class="nav-btn active" onclick="navigateTo('dashboard')">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-btn" onclick="navigateTo('strength')">
+                <i class="fas fa-chart-line"></i>
+                <span>Password Analyzer</span>
+            </button>
+            <button class="nav-btn" onclick="navigateTo('hashing')">
+                <i class="fas fa-lock"></i>
+                <span>Password Hashing</span>
+            </button>
+            <button class="nav-btn" onclick="navigateTo('attacks')">
+                <i class="fas fa-skull-crossbones"></i>
+                <span>Attack Simulation</span>
+            </button>
+            <button class="nav-btn" onclick="navigateTo('defense')">
+                <i class="fas fa-shield-alt"></i>
+                <span>Defense System</span>
+            </button>
+            <button class="nav-btn" onclick="navigateTo('logs')">
+                <i class="fas fa-chart-bar"></i>
+                <span>Security Logs</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="page active">
+            <section class="welcome-section">
+                <div class="welcome-card">
+                    <h2><i class="fas fa-info-circle"></i> Welcome to Password Security Analysis System</h2>
+                    <p>This interactive platform demonstrates password security vulnerabilities and defense mechanisms through safe, controlled simulations.</p>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>Password Analyzer</h3>
+                            <p>Test password strength and calculate estimated crack time</p>
+                            <button class="btn btn-primary" onclick="navigateTo('strength')">Get Started</button>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-lock"></i>
+                            <h3>Password Hashing</h3>
+                            <p>Learn about secure password storage methods</p>
+                            <button class="btn btn-primary" onclick="navigateTo('hashing')">Explore</button>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-skull-crossbones"></i>
+                            <h3>Attack Simulation</h3>
+                            <p>See how brute force and dictionary attacks work</p>
+                            <button class="btn btn-primary" onclick="navigateTo('attacks')">Try Now</button>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>Defense System</h3>
+                            <p>Test security mechanisms that prevent attacks</p>
+                            <button class="btn btn-primary" onclick="navigateTo('defense')">Activate</button>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-chart-bar"></i>
+                            <h3>Security Logs</h3>
+                            <p>Monitor and analyze security events</p>
+                            <button class="btn btn-primary" onclick="navigateTo('logs')">View Logs</button>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-book"></i>
+                            <h3>Educational Purpose</h3>
+                            <p>All simulations are safe and controlled</p>
+                            <button class="btn btn-primary disabled">Learn More</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- System Stats -->
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-item">
+                <i class="fas fa-users"></i>
+                <span id="totalUsers">0</span>
+                <small>Users</small>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-key"></i>
+                <span id="totalAttempts">0</span>
+                <small>Login Attempts</small>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-lock"></i>
+                <span id="lockedAccounts">0</span>
+                <small>Locked Accounts</small>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="totalLogs">0</span>
+                <small>Security Events</small>
+            </div>
+        </div>
+        </div>
+
+        <!-- Password Strength Analyzer Page -->
+        <div id="strengthPage" class="page">
+            <section class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-chart-line"></i> Password Strength Analyzer</h2>
+                <p>Test password strength and calculate estimated crack time</p>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="tryWeakPassword()">
+                        <i class="fas fa-bolt"></i> Try Weak Password
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="tryMediumPassword()">
+                        <i class="fas fa-bolt"></i> Try Medium Password
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="tryStrongPassword()">
+                        <i class="fas fa-bolt"></i> Try Strong Password
+                    </button>
+                </div>
+                
+                <div class="input-group">
+                    <input type="password" id="passwordInput" placeholder="Enter a password to analyze">
+                    <button class="btn-toggle" onclick="togglePasswordVisibility('passwordInput')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <button class="btn btn-primary" onclick="analyzePassword()">
+                    <i class="fas fa-search"></i> Analyze Password
+                </button>
+                
+                <div id="strengthResult" class="result-box" style="display: none;">
+                    <div class="strength-meter">
+                        <div id="strengthBar" class="strength-bar"></div>
+                    </div>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <strong>Strength:</strong>
+                            <span id="strengthText" class="badge"></span>
+                        </div>
+                        <div class="result-item">
+                            <strong>Crack Time:</strong>
+                            <span id="crackTime"></span>
+                        </div>
+                        <div class="result-item">
+                            <strong>Length:</strong>
+                            <span id="passwordLength"></span> characters
+                        </div>
+                        <div class="result-item">
+                            <strong>Entropy:</strong>
+                            <span id="entropy"></span> bits
+                        </div>
+                    </div>
+                    <div class="checklist">
+                        <div class="check-item" id="checkUpper">
+                            <i class="fas fa-times"></i> Uppercase Letters
+                        </div>
+                        <div class="check-item" id="checkLower">
+                            <i class="fas fa-times"></i> Lowercase Letters
+                        </div>
+                        <div class="check-item" id="checkDigit">
+                            <i class="fas fa-times"></i> Numbers
+                        </div>
+                        <div class="check-item" id="checkSpecial">
+                            <i class="fas fa-times"></i> Special Characters
+                        </div>
+                        <div class="check-item" id="checkCommon">
+                            <i class="fas fa-times"></i> Not Common Password
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <div class="page-navigation">
+            <button class="btn btn-secondary" onclick="navigateTo('dashboard')">
+                <i class="fas fa-home"></i> Back to Dashboard
+            </button>
+            <button class="btn btn-primary" onclick="navigateTo('hashing')">
+                Next: Password Hashing <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        </div>
+
+        <!-- Password Hashing Page -->
+        <div id="hashingPage" class="page">
+    
+        <!-- Step 2: Password Hashing -->
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-lock"></i> Password Storage Simulation</h2>
+                <p>Demonstrate secure password hashing techniques</p>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="demonstrateHashing()">
+                        <i class="fas fa-bolt"></i> Quick Demo
+                    </button>
+                </div>
+                
+                <div class="input-group">
+                    <input type="password" id="hashPasswordInput" placeholder="Enter password to hash">
+                    <button class="btn-toggle" onclick="togglePasswordVisibility('hashPasswordInput')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <button class="btn btn-primary" onclick="hashPassword()">
+                    <i class="fas fa-fingerprint"></i> Generate Hashes
+                </button>
+                
+                <div id="hashResult" class="result-box" style="display: none;">
+                    <div class="hash-comparison">
+                        <div class="hash-item danger">
+                            <strong><i class="fas fa-times"></i> Plain Text (INSECURE)</strong>
+                            <code id="plainText"></code>
+                        </div>
+                        <div class="hash-item warning">
+                            <strong><i class="fas fa-exclamation-triangle"></i> MD5 (Weak)</strong>
+                            <code id="md5Hash"></code>
+                        </div>
+                        <div class="hash-item info">
+                            <strong><i class="fas fa-check-circle"></i> SHA-256 (Better)</strong>
+                            <code id="sha256Hash"></code>
+                        </div>
+                        <div class="hash-item success">
+                            <strong><i class="fas fa-shield-alt"></i> BCrypt (Recommended)</strong>
+                            <code id="bcryptHash"></code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <div class="page-navigation">
+            <button class="btn btn-secondary" onclick="navigateTo('strength')">
+                <i class="fas fa-arrow-left"></i> Previous: Password Analyzer
+            </button>
+            <button class="btn btn-primary" onclick="navigateTo('attacks')">
+                Next: Attack Simulation <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        </div>
+
+        <!-- Attack Simulation Page -->
+        <div id="attacksPage" class="page">
+    
+        <!-- Step 3: Attack Simulation -->
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-skull-crossbones"></i> Credential Attack Simulation</h2>
+                <p>Safely demonstrate how attacks work on different password types</p>
+            </div>
+            <div class="card-body">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('brute')">
+                        <i class="fas fa-hammer"></i> Brute Force
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('dictionary')">
+                        <i class="fas fa-book"></i> Dictionary Attack
+                    </button>
+                </div>
+
+                <!-- Brute Force Tab -->
+                <div id="bruteTab" class="tab-content active">
+                    <div class="quick-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="tryBruteForceDemo()">
+                            <i class="fas fa-bolt"></i> Quick Demo
+                        </button>
+                    </div>
+                    
+                    <p class="info-text">
+                        <i class="fas fa-info-circle"></i>
+                        Tries all possible combinations systematically. Effective against short passwords.
+                    </p>
+                    <div class="input-group">
+                        <input type="text" id="brutePasswordInput" placeholder="Target password (keep it short for demo)">
+                        <button class="btn-toggle" onclick="togglePasswordVisibility('brutePasswordInput')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <button class="btn btn-danger" onclick="runBruteForce()">
+                        <i class="fas fa-play"></i> Run Brute Force Attack
+                    </button>
+                    <div id="bruteResult" class="result-box" style="display: none;"></div>
+                </div>
+
+                <!-- Dictionary Attack Tab -->
+                <div id="dictionaryTab" class="tab-content">
+                    <div class="quick-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="tryDictionaryDemo()">
+                            <i class="fas fa-bolt"></i> Quick Demo
+                        </button>
+                    </div>
+                    
+                    <p class="info-text">
+                        <i class="fas fa-info-circle"></i>
+                        Uses a wordlist of common passwords. Very fast but only works on weak passwords.
+                    </p>
+                    <div class="input-group">
+                        <input type="text" id="dictPasswordInput" placeholder="Target password (try: password123, admin, welcome)">
+                        <button class="btn-toggle" onclick="togglePasswordVisibility('dictPasswordInput')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <button class="btn btn-danger" onclick="runDictionaryAttack()">
+                        <i class="fas fa-play"></i> Run Dictionary Attack
+                    </button>
+                    <div id="dictResult" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+        </section>
+        
+        <div class="page-navigation">
+            <button class="btn btn-secondary" onclick="navigateTo('hashing')">
+                <i class="fas fa-arrow-left"></i> Previous: Password Hashing
+            </button>
+            <button class="btn btn-primary" onclick="navigateTo('defense')">
+                Next: Defense System <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        </div>
+
+        <!-- Defense Mechanisms Page -->
+        <div id="defensePage" class="page">
+    
+        <!-- Step 4: Defense Mechanisms -->
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-shield-alt"></i> Attack Detection & Defense</h2>
+                <p>Enable security mechanisms and test login protection</p>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="demoDefenseSystem()">
+                        <i class="fas fa-bolt"></i> Quick Setup Demo
+                    </button>
+                </div>
+                
+                <div class="defense-toggle">
+                    <label class="switch">
+                        <input type="checkbox" id="defenseToggle" onchange="toggleDefense()">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="defenseStatus">Defense Mechanisms: <strong>DISABLED</strong></span>
+                </div>
+
+                <div class="defense-features">
+                    <div class="feature-item">
+                        <i class="fas fa-ban"></i>
+                        <strong>Account Lockout:</strong> Lock account after 3 failed attempts
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-clock"></i>
+                        <strong>Rate Limiting:</strong> Max 5 attempts per 5 minutes
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-hourglass-half"></i>
+                        <strong>Login Delay:</strong> Time delay between login attempts
+                    </div>
+                </div>
+
+                <div class="test-login">
+                    <h3><i class="fas fa-user-plus"></i> Create Test Account</h3>
+                    <div class="form-row">
+                        <input type="text" id="regUsername" placeholder="Username">
+                        <input type="password" id="regPassword" placeholder="Password">
+                        <button class="btn btn-primary" onclick="registerUser()">
+                            <i class="fas fa-user-plus"></i> Register
+                        </button>
+                    </div>
+
+                    <h3><i class="fas fa-sign-in-alt"></i> Test Login (Simulate Attack)</h3>
+                    <div class="form-row">
+                        <input type="text" id="loginUsername" placeholder="Username">
+                        <input type="password" id="loginPassword" placeholder="Password">
+                        <button class="btn btn-warning" onclick="testLogin()">
+                            <i class="fas fa-sign-in-alt"></i> Attempt Login
+                        </button>
+                    </div>
+
+                    <div id="loginResult" class="result-box" style="display: none;"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="resetAccounts()">
+                        <i class="fas fa-undo"></i> Reset All Accounts
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <div class="page-navigation">
+            <button class="btn btn-secondary" onclick="navigateTo('attacks')">
+                <i class="fas fa-arrow-left"></i> Previous: Attack Simulation
+            </button>
+            <button class="btn btn-primary" onclick="navigateTo('logs')">
+                Next: Security Logs <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        </div>
+
+        <!-- Security Logs Page -->
+        <div id="logsPage" class="page">
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-chart-bar"></i> Security Event Logs</h2>
+                <p>Monitor and analyze attack attempts and security events</p>
+            </div>
+            <div class="card-body">
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="refreshLogs()">
+                        <i class="fas fa-sync"></i> Refresh Logs
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearLogs()">
+                        <i class="fas fa-trash"></i> Clear Logs
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportLogs()">
+                        <i class="fas fa-download"></i> Export Logs
+                    </button>
+                </div>
+
+                <div id="logsContainer" class="logs-container">
+                    <p class="info-text">No security events logged yet.</p>
+                </div>
+            </div>
+        </section>
+        
+        <div class="page-navigation">
+            <button class="btn btn-secondary" onclick="navigateTo('defense')">
+                <i class="fas fa-arrow-left"></i> Previous: Defense System
+            </button>
+            <button class="btn btn-primary" onclick="navigateTo('dashboard')">
+                <i class="fas fa-home"></i> Back to Dashboard
+            </button>
+        </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Password Security & Credential Attack Detection | VAPT Educational Project</p>
+            <p><i class="fas fa-exclamation-triangle"></i> For educational purposes only. Do not use for illegal activities.</p>
+        </div>
+    </footer>
+
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Processing...</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/page-content.js') }}"></script>
+</body>
+</html>
