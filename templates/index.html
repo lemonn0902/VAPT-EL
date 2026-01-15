@@ -583,6 +583,9 @@
                     <button class="tab-btn" onclick="switchTab('dictionary')">
                         <i class="fas fa-book"></i> Dictionary Attack
                     </button>
+                    <button class="tab-btn" onclick="switchTab('c2c')">
+                        <i class="fas fa-network-wired"></i> Computer-to-Computer
+                    </button>
                 </div>
 
                 <!-- Brute Force Tab -->
@@ -631,6 +634,33 @@
                         <i class="fas fa-play"></i> Run Dictionary Attack
                     </button>
                     <div id="dictResult" class="result-box" style="display: none;"></div>
+                </div>
+
+                <!-- Computer-to-Computer Attack Tab -->
+                <div id="c2cTab" class="tab-content">
+                    <div class="quick-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="tryC2CDemo()">
+                            <i class="fas fa-bolt"></i> Quick Demo
+                        </button>
+                    </div>
+                    
+                    <p class="info-text">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Educational Simulation Only:</strong> Demonstrates network-based attacks such as port scanning and unauthorized access attempts. No real network traffic is generated.
+                    </p>
+                    
+                    <div class="input-group">
+                        <input type="text" id="targetIPInput" placeholder="Target IP/Hostname (e.g., 192.168.1.1, 10.0.0.5)">
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="number" id="targetPortInput" placeholder="Target Port (1-65535)" min="1" max="65535" value="80">
+                    </div>
+                    
+                    <button class="btn btn-danger" onclick="runC2CAttack()">
+                        <i class="fas fa-play"></i> Run C2C Attack Simulation
+                    </button>
+                    <div id="c2cResult" class="result-box" style="display: none;"></div>
                 </div>
             </div>
         </section>

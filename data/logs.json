@@ -22,5 +22,157 @@
     "source_ip": "127.0.0.1",
     "success": false,
     "details": "3 failed attempts"
+  },
+  {
+    "timestamp": "2026-01-15T23:09:19.761965",
+    "type": "C2C Attack Simulation",
+    "username": "127.0.0.1",
+    "source_ip": "127.0.0.1",
+    "success": true,
+    "details": "Target: 10.0.0.5:80 | Attempts: 2 | Vulnerability: Outdated software version"
+  },
+  {
+    "timestamp": "2026-01-15T23:09:41.505942",
+    "type": "C2C Attack Simulation",
+    "username": "127.0.0.1",
+    "source_ip": "127.0.0.1",
+    "success": true,
+    "details": "Target: 10.0.1.58:80 | Attempts: 2 | Vulnerability: Outdated software version"
+  },
+  {
+    "timestamp": "2026-01-15T23:10:20.307911",
+    "type": "C2C Attack Simulation",
+    "username": "127.0.0.1",
+    "source_ip": "127.0.0.1",
+    "success": true,
+    "details": "Target: 192.168.2.2:80 | Attempts: 1 | Vulnerability: Service responding"
+  },
+  {
+    "timestamp": "2026-01-15T23:15:59.893860",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Port blocked: 192.168.2.2:80"
+  },
+  {
+    "timestamp": "2026-01-15T23:16:34.910851",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Target: 192.168.2.2:85, Phases: 5, Success: False"
+  },
+  {
+    "timestamp": "2026-01-15T23:17:04.145205",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Port blocked: 192.168.2.2:87"
+  },
+  {
+    "timestamp": "2026-01-15T23:17:12.491649",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": true,
+    "details": "Target: 192.168.2.1:87, Phases: 6, Success: True"
+  },
+  {
+    "timestamp": "2026-01-15T23:22:38.376586",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Target: 10.0.0.5:80, Phases: 5, Success: False"
+  },
+  {
+    "timestamp": "2026-01-15T23:26:46.032291",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Target: 10.0.0.5:80, Phases: 5, Success: False"
+  },
+  {
+    "timestamp": "2026-01-15T23:27:01.849339",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Port blocked: 10.0.0.5:84"
+  },
+  {
+    "timestamp": "2026-01-15T23:27:56.190953",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Target: 192.168.1.1:80, Phases: 5, Success: False"
+  },
+  {
+    "timestamp": "2026-01-15T23:29:46.946829",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Port blocked: 192.168.1.1:81"
+  },
+  {
+    "timestamp": "2026-01-15T23:29:49.427794",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Port blocked: 192.168.1.1:81"
+  },
+  {
+    "timestamp": "2026-01-16T00:47:13.733157",
+    "type": "C2C Attack",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Host unreachable: 10.0.0.5:80"
+  },
+  {
+    "timestamp": "2026-01-16T00:53:46.967808",
+    "type": "C2C Attack",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Host unreachable: 192.168.1.100:80"
+  },
+  {
+    "timestamp": "2026-01-16T00:56:06.828440",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Target unreachable: 192.168.1.100:80"
+  },
+  {
+    "timestamp": "2026-01-16T00:56:09.352919",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Port blocked: 192.168.1.100:80"
+  },
+  {
+    "timestamp": "2026-01-16T00:58:29.327294",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Target: 192.168.1.100:83, Phases: 6, Success: False"
+  },
+  {
+    "timestamp": "2026-01-16T00:59:53.393140",
+    "type": "C2C Attack Simulation",
+    "username": "simulated_user",
+    "source_ip": "127.0.0.1",
+    "success": false,
+    "details": "Target: 192.168.1.100:80, Phases: 6, Success: False"
   }
 ]

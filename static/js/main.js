@@ -123,6 +123,9 @@ function switchTab(tabName) {
     } else if (tabName === 'dictionary') {
         document.getElementById('dictionaryTab').classList.add('active');
         document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+    } else if (tabName === 'c2c') {
+        document.getElementById('c2cTab').classList.add('active');
+        document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
     }
 }
 
@@ -1019,12 +1022,133 @@ async function exportLogs() {
     }
 }
 
+// Computer-to-Computer Attack Functions
+function tryC2CDemo() {
+    document.getElementById('targetIPInput').value = '192.168.1.100';
+    document.getElementById('targetPortInput').value = '80';
+    runC2CAttack();
+}
+
+async function runC2CAttack() {
+    const targetIP = document.getElementById('targetIPInput').value.trim();
+    const targetPort = document.getElementById('targetPortInput').value.trim();
+    
+    if (!targetIP || !targetPort) {
+        alert('Please enter both target IP and port');
+        return;
+    }
+    
+    const port = parseInt(targetPort);
+    if (isNaN(port) || port < 1 || port > 65535) {
+        alert('Please enter a valid port (1-65535)');
+        return;
+    }
+    
+    showLoading();
+    try {
+        const response = await fetch('/api/c2c-attack', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target_ip: targetIP, target_port: port })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            alert('❌ ' + (data.error || 'Attack simulation failed'));
+            return;
+        }
+        
+        let resultHTML = '<h4><i class="fas fa-network-wired"></i> Computer-to-Computer Attack Simulation</h4>';
+        
+        // Overall Result
+        const resultStatus = data.success ? 
+            '<span style="color: #ef4444;"><i class="fas fa-check-circle"></i> FULL COMPROMISE</span>' : 
+            '<span style="color: #10b981;"><i class="fas fa-shield-alt"></i> ATTACK BLOCKED</span>';
+        
+        resultHTML += `
+            <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 6px; margin: 10px 0; border-left: 4px solid ${data.success ? '#ef4444' : '#10b981'};">
+                <strong>Overall Result:</strong> ${resultStatus}
+                <div style="margin-top: 8px; font-size: 0.9em;">
+                    <span><strong>Target:</strong> ${data.target_ip}:${data.target_port}</span> | 
+                    <span><strong>Total Time:</strong> ${data.total_time}s</span>
+                </div>
+            </div>
+        `;
+        
+        // Attack Phases Breakdown
+        resultHTML += '<h5 style="margin-top: 15px;">Attack Phases:</h5>';
+        
+        if (data.phases && Array.isArray(data.phases)) {
+            data.phases.forEach((phase, index) => {
+                let phaseColor = '#666';
+                let phaseIcon = '<i class="fas fa-hourglass-half"></i>';
+                
+                if (phase.status === 'Success' || phase.success === true) {
+                    phaseColor = '#ef4444';
+                    phaseIcon = '<i class="fas fa-check-circle" style="color: #ef4444;"></i>';
+                } else if (phase.status === 'Failed' || phase.status === 'Closed/Filtered') {
+                    phaseColor = '#10b981';
+                    phaseIcon = '<i class="fas fa-times-circle" style="color: #10b981;"></i>';
+                } else if (phase.status === 'Open') {
+                    phaseColor = '#f59e0b';
+                    phaseIcon = '<i class="fas fa-exclamation-circle" style="color: #f59e0b;"></i>';
+                }
+                
+                resultHTML += `
+                    <div style="background: rgba(0,0,0,0.15); padding: 10px; margin: 8px 0; border-radius: 4px; border-left: 3px solid ${phaseColor};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${phaseIcon} ${index + 1}. ${phase.phase}</strong>
+                                <div style="font-size: 0.85em; margin-top: 4px; color: #aaa;">
+                                    ${phase.details || phase.service || phase.service_detected || ''}
+                                </div>
+                            </div>
+                            <div style="text-align: right; font-size: 0.85em;">
+                                <div><strong>${phase.time}s</strong></div>
+                                ${phase.status ? `<div>${phase.status}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        // Service Detected
+        if (data.service_detected) {
+            resultHTML += `
+                <div style="background: rgba(0,0,0,0.2); padding: 10px; margin: 10px 0; border-radius: 4px;">
+                    <strong>Service Detected:</strong> ${data.service_detected}
+                </div>
+            `;
+        }
+        
+        // Educational Notes
+        resultHTML += `
+            <div class="info-text" style="margin-top: 15px;">
+                <i class="fas fa-graduation-cap"></i>
+                <p><strong>Educational Note:</strong> This is a 100% simulated attack. No real network connections were made. All results are randomized.</p>
+                <p><strong>What you learned:</strong> A real attack would involve reconnaissance, port scanning, service enumeration, vulnerability detection, and exploitation. This demo shows each phase with realistic timing and outcomes.</p>
+            </div>
+        `;
+        
+        document.getElementById('c2cResult').innerHTML = resultHTML;
+        document.getElementById('c2cResult').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred during the C2C attack simulation');
+    } finally {
+        hideLoading();
+    }
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     updateStats();
     
-    // Auto-refresh stats every 5 seconds
-    setInterval(updateStats, 5000);
+    // Auto-refresh stats every 30 seconds (reduced from 5s to avoid rate limiting)
+    setInterval(updateStats, 30000);
     
     // Load theme from localStorage
     const savedTheme = localStorage.getItem('theme') || 'light';

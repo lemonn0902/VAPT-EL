@@ -22,7 +22,7 @@ app.secret_key = 'vapt_security_project_2026'
 
 # Rate limiter (per-IP) for sensitive endpoints
 limiter = Limiter(
-    app,
+    app=app,
     key_func=get_remote_address,
     default_limits=["200 per day", "50 per hour"]
 )
@@ -671,6 +671,199 @@ def dictionary_attack():
         'rate': round(attempts / elapsed_time) if elapsed_time > 0 else 0
     })
 
+@app.route('/api/c2c-attack', methods=['POST'])
+@limiter.limit("2 per minute")
+def c2c_attack():
+    """Simulate computer-to-computer attack with multiple phases (educational demo only)"""
+    data = request.json
+    target_ip = data.get('target_ip', '')
+    target_port = data.get('target_port', 80)
+    source_ip = request.remote_addr
+    
+    # Validate inputs
+    if not target_ip:
+        return jsonify({'error': 'Target IP is required'}), 400
+    
+    if not isinstance(target_port, int) or not (1 <= target_port <= 65535):
+        return jsonify({'error': 'Valid port (1-65535) is required'}), 400
+    
+    # NOTE: This is a SIMULATED attack for educational purposes only
+    # No real network connections are made. All results are randomized.
+    
+    start_time = time.time()
+    phases = []
+    
+    # ===== PHASE 1: RECONNAISSANCE =====
+    phase1_start = time.time()
+    time.sleep(0.1)  # Simulate network ping
+    
+    # Determine if target is "alive" (random simulation)
+    target_alive = random.random() > 0.2  # 80% chance target exists
+    phase1_time = time.time() - phase1_start
+    
+    phases.append({
+        'phase': 'Reconnaissance (Ping/Discovery)',
+        'status': 'Success' if target_alive else 'Failed',
+        'time': round(phase1_time, 3),
+        'details': f'Target {target_ip} is {"online" if target_alive else "unreachable"}'
+    })
+    
+    if not target_alive:
+        elapsed_time = time.time() - start_time
+        log_attack('C2C Attack Simulation', 'simulated_user', source_ip, False, 
+                   f'Target unreachable: {target_ip}:{target_port}')
+        return jsonify({
+            'success': False,
+            'target_ip': target_ip,
+            'target_port': target_port,
+            'phases': phases,
+            'overall_result': 'Attack failed - target unreachable',
+            'time': round(elapsed_time, 3)
+        })
+    
+    # ===== PHASE 2: PORT SCANNING =====
+    phase2_start = time.time()
+    time.sleep(0.15)  # Simulate port scan delay
+    
+    # Determine port status (firewall simulation)
+    port_service = {
+        22: 'SSH', 80: 'HTTP', 443: 'HTTPS', 3306: 'MySQL', 
+        5432: 'PostgreSQL', 6379: 'Redis', 27017: 'MongoDB', 3389: 'RDP'
+    }
+    service_name = port_service.get(target_port, 'Unknown Service')
+    
+    # Firewall blocks some ports (simulation)
+    common_open_ports = [22, 80, 443, 3306, 8080, 8443]
+    is_port_open = random.random() > 0.4 if target_port in common_open_ports else random.random() > 0.7
+    
+    phase2_time = time.time() - phase2_start
+    phases.append({
+        'phase': 'Port Scanning',
+        'port': target_port,
+        'service': service_name,
+        'status': 'Open' if is_port_open else 'Closed/Filtered',
+        'time': round(phase2_time, 3),
+        'details': f'Port {target_port}/{service_name} is {"open" if is_port_open else "closed or blocked by firewall"}'
+    })
+    
+    if not is_port_open:
+        elapsed_time = time.time() - start_time
+        log_attack('C2C Attack Simulation', 'simulated_user', source_ip, False,
+                   f'Port blocked: {target_ip}:{target_port}')
+        return jsonify({
+            'success': False,
+            'target_ip': target_ip,
+            'target_port': target_port,
+            'phases': phases,
+            'overall_result': 'Attack failed - port is closed or blocked by firewall',
+            'time': round(elapsed_time, 3)
+        })
+    
+    # ===== PHASE 3: SERVICE ENUMERATION =====
+    phase3_start = time.time()
+    time.sleep(0.1)
+    
+    # Simulate version detection
+    services = {
+        'SSH': ['OpenSSH 7.4', 'OpenSSH 8.0', 'libssh 0.8'],
+        'HTTP': ['Apache 2.4', 'Nginx 1.19', 'IIS 10.0'],
+        'HTTPS': ['Apache 2.4', 'Nginx 1.19'],
+        'MySQL': ['MySQL 5.7', 'MySQL 8.0', 'MariaDB 10.5'],
+        'PostgreSQL': ['PostgreSQL 12', 'PostgreSQL 13'],
+        'Unknown Service': ['Unknown']
+    }
+    
+    detected_service = random.choice(services.get(service_name, ['Unknown']))
+    phase3_time = time.time() - phase3_start
+    
+    phases.append({
+        'phase': 'Service Enumeration',
+        'service_detected': detected_service,
+        'time': round(phase3_time, 3),
+        'details': f'Detected {service_name} service: {detected_service}'
+    })
+    
+    # ===== PHASE 4: VULNERABILITY DETECTION =====
+    phase4_start = time.time()
+    time.sleep(0.12)
+    
+    # Simulate vulnerability detection (educational - random)
+    vulnerability_found = random.random() > 0.6  # 40% chance vulnerability exists
+    vulnerabilities = [
+        'Unpatched version detected',
+        'Weak authentication methods enabled',
+        'Default credentials in use',
+        'SQL injection vulnerability',
+        'Remote code execution possible',
+        'Buffer overflow in service'
+    ]
+    
+    vuln_desc = random.choice(vulnerabilities) if vulnerability_found else 'No known vulnerabilities detected'
+    phase4_time = time.time() - phase4_start
+    
+    phases.append({
+        'phase': 'Vulnerability Detection',
+        'vulnerable': vulnerability_found,
+        'time': round(phase4_time, 3),
+        'details': vuln_desc
+    })
+    
+    # ===== PHASE 5: EXPLOITATION ATTEMPT =====
+    phase5_start = time.time()
+    time.sleep(0.15)
+    
+    # Attempt exploitation if vulnerability exists
+    exploitation_success = False
+    if vulnerability_found:
+        # Simulate exploitation (random success)
+        exploitation_success = random.random() > 0.5  # 50% success if vuln exists
+    
+    phase5_time = time.time() - phase5_start
+    phases.append({
+        'phase': 'Exploitation Attempt',
+        'attempted': vulnerability_found,
+        'success': exploitation_success,
+        'time': round(phase5_time, 3),
+        'details': f'{"Exploitation successful - gained access" if exploitation_success else "Exploitation failed - access denied"}' if vulnerability_found else 'Skipped - no vulnerability to exploit'
+    })
+    
+    # ===== PHASE 6: LATERAL MOVEMENT (if exploited) =====
+    phases_executed = len([p for p in phases if p.get('success') or p.get('vulnerable') or p.get('status') in ['Open', 'Success']])
+    
+    if exploitation_success:
+        phase6_start = time.time()
+        time.sleep(0.1)
+        
+        lateral_move_success = random.random() > 0.3  # 70% if exploited
+        phase6_time = time.time() - phase6_start
+        
+        phases.append({
+            'phase': 'Lateral Movement',
+            'attempted': True,
+            'success': lateral_move_success,
+            'time': round(phase6_time, 3),
+            'details': f'{"Successfully moved to adjacent systems" if lateral_move_success else "Lateral movement blocked by network segmentation"}' if exploitation_success else 'No access for lateral movement'
+        })
+        
+        exploitation_success = lateral_move_success
+    
+    elapsed_time = time.time() - start_time
+    
+    # Log the attack
+    log_attack('C2C Attack Simulation', 'simulated_user', source_ip, exploitation_success,
+               f'Target: {target_ip}:{target_port}, Phases: {len(phases)}, Success: {exploitation_success}')
+    
+    return jsonify({
+        'success': exploitation_success,
+        'target_ip': target_ip,
+        'target_port': target_port,
+        'service_detected': detected_service,
+        'phases': phases,
+        'overall_result': 'Full compromise achieved' if exploitation_success else 'Attack blocked at defense layer',
+        'total_time': round(elapsed_time, 3),
+        'educational_note': 'This is a simulated educational demonstration. No real systems were accessed.'
+    })
+
 @app.route('/api/register', methods=['POST'])
 @limiter.limit("5 per minute")
 def register():
@@ -835,6 +1028,7 @@ def reset_accounts():
     return jsonify({'success': True, 'message': 'All accounts reset'})
 
 @app.route('/api/stats', methods=['GET'])
+@limiter.exempt  # Don't rate limit stats endpoint (dashboard stats only)
 def get_stats():
     """Get system statistics"""
     total_attempts = sum(len(attempts) for attempts in login_attempts.values())
