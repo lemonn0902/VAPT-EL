@@ -4,3 +4,5 @@ Werkzeug==3.0.1
 pyotp==2.9.0
 qrcode==7.4.2
 Pillow==10.1.0
+Flask-Limiter==2.8.0
+limits==2.8.0

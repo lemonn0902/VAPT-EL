@@ -166,6 +166,12 @@
 - Session management
 - Secure defaults
 
+### Rate Limiting (Implemented)
+- Per-IP rate limiting added using `Flask-Limiter` to protect interactive demos and sensitive endpoints.
+- Default global limits: `200/day`, `50/hour`.
+- Sensitive endpoint defaults (examples): `login` — `10/min`, `register` — `5/min`, `breach check` — `10/min`, `2FA` endpoints — `10/min`, `password generator/strength` — `60/min`, `brute-force sim` — `2/min`.
+   - These are configurable in the server code for instructors or testing scenarios.
+
 ---
 
 ## 🎓 Educational Value

@@ -57,6 +57,8 @@ Traditional password systems are vulnerable to credential-based attacks such as 
 - Real-time security event monitoring
 - Test user account system
 - Toggle defense mechanisms on/off for comparison
+   - Implemented per-IP rate limiting via `Flask-Limiter` with conservative defaults (global: `200/day`, `50/hour`).
+   - Sensitive endpoints have tighter defaults (e.g. `login` 10/min, `register` 5/min, `breach check` 10/min, `2FA` 10/min, `brute-force` sim 2/min).
 
 ### 📱 7: Two-Factor Authentication (2FA) Demo
 - **NEW!** Interactive 2FA/MFA demonstration
@@ -150,6 +152,8 @@ Werkzeug==3.0.1
 pyotp==2.9.0
 qrcode==7.4.2
 Pillow==10.1.0
+Flask-Limiter==2.8.0
+limits==2.8.0
 ```
 
 ## 🎓 Educational Use Cases

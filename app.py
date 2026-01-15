@@ -14,9 +14,18 @@ import pyotp
 import qrcode
 from io import BytesIO
 import base64
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
 app.secret_key = 'vapt_security_project_2026'
+
+# Rate limiter (per-IP) for sensitive endpoints
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 # Global storage for demonstration
 login_attempts = defaultdict(list)
@@ -98,6 +107,7 @@ def index():
     return render_template('index.html')
 
 @app.route('/api/password-strength', methods=['POST'])
+@limiter.limit("60 per minute")
 def check_password_strength():
     """Analyze password strength and calculate crack time"""
     data = request.json
@@ -222,6 +232,7 @@ def calculate_entropy(password):
     return 0
 
 @app.route('/api/generate-password', methods=['POST'])
+@limiter.limit("60 per minute")
 def generate_password():
     """Generate a secure random password"""
     data = request.json
@@ -319,6 +330,7 @@ def check_password_strength_internal(password):
     }
 
 @app.route('/api/check-breach', methods=['POST'])
+@limiter.limit("10 per minute")
 def check_breach():
     """Simulate checking if password has been in known data breaches"""
     data = request.json
@@ -349,6 +361,7 @@ def check_breach():
     })
 
 @app.route('/api/2fa/generate', methods=['POST'])
+@limiter.limit("10 per minute")
 def generate_2fa():
     """Generate 2FA secret and QR code"""
     data = request.json
@@ -382,6 +395,7 @@ def generate_2fa():
     })
 
 @app.route('/api/2fa/verify', methods=['POST'])
+@limiter.limit("10 per minute")
 def verify_2fa():
     """Verify 2FA code"""
     data = request.json
@@ -403,6 +417,7 @@ def verify_2fa():
         return jsonify({'error': str(e)}), 400
 
 @app.route('/api/password-policy/check', methods=['POST'])
+@limiter.limit("30 per minute")
 def check_password_policy():
     """Check password against custom policy"""
     data = request.json
@@ -547,6 +562,7 @@ def hash_password():
     })
 
 @app.route('/api/brute-force', methods=['POST'])
+@limiter.limit("2 per minute")
 def brute_force_attack():
     """Simulate brute force attack"""
     data = request.json
@@ -602,6 +618,7 @@ def brute_force_attack():
     })
 
 @app.route('/api/dictionary-attack', methods=['POST'])
+@limiter.limit("5 per minute")
 def dictionary_attack():
     """Simulate dictionary attack"""
     data = request.json
@@ -655,6 +672,7 @@ def dictionary_attack():
     })
 
 @app.route('/api/register', methods=['POST'])
+@limiter.limit("5 per minute")
 def register():
     """Register a test user account"""
     data = request.json
@@ -684,6 +702,7 @@ def register():
     })
 
 @app.route('/api/login', methods=['POST'])
+@limiter.limit("10 per minute")
 def login():
     """Simulate login with defense mechanisms"""
     global defense_enabled
